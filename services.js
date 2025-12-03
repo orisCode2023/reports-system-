@@ -1,12 +1,13 @@
 import { dataBase } from "./db.js";
-import { isEmpty, isObject, isExistId, validType } from "./utils.js";
+import { isEmpty, validType, validToInsert} from "./utils.js";
+import input from 'analiza-sync';
+import { nanoid } from "nanoid";
 
-const requierdFeilds = ["id", "terroristName", "terroristLastName", "weapons", "description"]
 function newReport({ id, terroristName, terroristLastName, weapons = [""], description = "" }) {
     try {
         if (validType(id) && isEmpty(id)) {
             return {
-                id,
+                id:id ?? nanoid(),
                 terroristName: terroristName ?? "Muhammad",
                 terroristLastName: terroristLastName ?? "unknown",
                 weapons,
@@ -22,41 +23,69 @@ function newReport({ id, terroristName, terroristLastName, weapons = [""], descr
     }
 }
 
-
-const insertData = (obj) => {
-    if (isObject(obj)) {
-        if (isExistId(obj.id, dataBase)) {
-            console.log("This id is already exist")
-            return
+const insertData = (db=[], obj=Object) => {
+    if (db.length !== 0){
+        if (validToInsert(db, obj)){
+            db.push(obj)
+        } else {
+            throw new Error("not valid ")
         }
-        dataBase.push(obj)
     } else {
-        throw new Error("not valid should be an object")
+        db.push(obj)
     }
 }
-insertData(newReport({ id: 123, description: "extreamly dangarous" }))
-insertData(newReport({ id: 456, description: "extreamly dangarous" }))
-insertData(newReport({ id: 789, description: "extreamly dangarous" }))
-insertData(newReport({ id: 789, description: "extreamly dangarous" }))
-// console.log(dataBase)
+
+const getDataBase = () => dataBase
 
 
-function sortByField(db=[Object]){
-    for (let i = 0; i < db.length; i++){
-        console.log(db[i])
+const searchById = (db=[Object], id) => {
+    const found = db.filter(report => report.id === id)
+    if (found){
+        return found
+    } else {
+        throw "Not Found"
     }
 }
-// console.log(sortByField(dataBase))
-
-
-function validProperty(propArr, obj){
-    let counter = 0
-    for (let key in obj) {
-        if (obj.hasOwnProperty(key)) {
-            value = exampleObj[key];
-            console.log(key, value);
-        }
-    }
+        
+const sortById = (db=[Object]) => {
+    const arrayId = db.map(report => Number(report.id))
+    return arrayId.sort((id1, id2) => id1 - id2)
 }
-console.log(dataBase[0].length)
+
+insertData(dataBase, newReport({id: 123, description: "extreamly dangarous" }))
+insertData(dataBase, newReport({ id: 789, description: "extreamly dangarous" }))
+insertData(dataBase, newReport({ id: 456, description: "extreamly dangarous" }))
+
+console.log(getDataBase)
+
+
+
+
+
+
+
+function test (id){
+    const ob = {
+        id: id ?? nanoid()
+    }
+    console.log(ob)
+}
+const name = input("Enter name: ")
+console.log(name) 
+
+
+
+
+
+
+
+// sorting methods
+
+// function sortByField(db=[Object], field){
+//     for (let i = 0; i < db.length; i++){
+//         console.log(db[i])
+//     }
+// }
+// // console.log(sortByField(dataBase))
+
 
